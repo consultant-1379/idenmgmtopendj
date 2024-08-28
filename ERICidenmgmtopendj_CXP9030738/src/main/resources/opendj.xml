@@ -1,0 +1,300 @@
+<?xml version="1.0" encoding="utf-8"?>
+<configEntity xmlns="http://www.ericsson.com/oss/itpf/deployment/dst/descriptor">
+  <description>opendj</description>
+  <singleton>true</singleton>
+  <scaleUnit>
+    <loadDrivers>
+<!--       cENM -->
+      <loadDriver name="openDJDBSizeMB_small" description="Calculated size of OpenDJ database in a small Deployment about 1880 nodes"></loadDriver>
+      <loadDriver name="openDJDBSizeMB_ExtraLarge" description="Calculated size of OpenDJ database in an ExtraLarge deployment about 25000 nodes"></loadDriver>
+      <loadDriver name="openDJChangeLogSizeMB_small" description="Calculated size of OpenDJ Change Log in a small deployment about 1880 nodes"></loadDriver>
+      <loadDriver name="openDJChangeLogSizeMB_ExtraLarge" description="Calculated size of OpenDJ Change Log in an ExtraLarge Deployment about 25000 nodes"></loadDriver>
+<!--       pENM -->
+      <loadDriver name="openDJDBSizeMB_pENM_ExtraSmall" description="Calculated size of OpenDJ database in a Extra Small Deployment about 293 nodes"></loadDriver>
+      <loadDriver name="openDJDBSizeMB_pENM_Small" description="Calculated size of OpenDJ database in a Small Deployment about 1880 nodes"></loadDriver>
+      <loadDriver name="openDJDBSizeMB_pENM_Medium" description="Calculated size of OpenDJ database in a Medium Deployment about 5900 nodes"></loadDriver>
+      <loadDriver name="openDJDBSizeMB_pENM_Large" description="Calculated size of OpenDJ database in a Large Deployment about 10500 nodes"></loadDriver>
+      <loadDriver name="openDJDBSizeMB_pENM_ExtraLarge" description="Calculated size of OpenDJ database in an pENM ExtraLarge deployment about 25000 nodes"></loadDriver>
+      <loadDriver name="openDJChangeLogSizeMB_pENM_ExtraSmall" description="Calculated size of OpenDJ Change Log in a Extra Small Deployment about 293 nodes"></loadDriver>
+      <loadDriver name="openDJChangeLogSizeMB_pENM_Small" description="Calculated size of OpenDJ Change Log in a Small Deployment about 1880 nodes"></loadDriver>
+      <loadDriver name="openDJChangeLogSizeMB_pENM_Medium" description="Calculated size of OpenDJ Change Log in a Medium Deployment about 5900 nodes"></loadDriver>
+      <loadDriver name="openDJChangeLogSizeMB_pENM_Large" description="Calculated size of OpenDJ Change Log in a Large Deployment about 10500 nodes"></loadDriver>
+      <loadDriver name="openDJChangeLogSizeMB_pENM_ExtraLarge" description="Calculated size of OpenDJ Change Log in an pENM ExtraLarge Deployment about 25000 nodes"></loadDriver>
+
+      <loadDriver name="dataVGfileSystemName" description="Name of PVC filesystems required by opendj"></loadDriver>
+      <loadDriver name="dataVGFileSystemSpaceMB" description="Size of PVC filesystems required by opendj"></loadDriver>
+      <loadDriver name="dataVGFileSnapSpacePercentage" description="amount of space required during upgrade to support changes to snap to facilitate rollback to previous version required by opendj"></loadDriver>
+      <loadDriver name="nasfileSystemName" description="Name of PVC filesystems required by opendj"></loadDriver>
+      <loadDriver name="nasFileSystemSpaceMB" description="Size of PVC filesystems required by opendj"></loadDriver>
+      <loadDriver name="nasFileSnapSpacePercentage" description="amount of space required during upgrade to support changes to snap to facilitate rollback to previous version required by opendj"></loadDriver>
+
+      <loadDriver name="logSizeOpenDjPerHourMB" description="Calculated Opendj log size per hour in MB in elastic search due to opendj"/>
+      <loadDriver name="openDJOperationCompletedPerHour"  description="Opendj Total Operation completed per hour"/>
+      <loadDriver name="logSizeAuditSecurityPerDayMB" description="Calculated Audit log size per day in MB in elastic search due to opendj"/>
+      <loadDriver name="logSizeErrorPerDayMB" description="Calculated Error log size per day in MB in elastic search due to opendj"/>
+      <loadDriver name="enm_deployment_type" description="Differernt enm deployment types considered Extra_Large_CloudNative_ENM, Extra_Large_ENM, Extra_Large_ENM_On_Rack_Servers, Large_ENM ,Medium_ENM, Large_Transport_only_ENM, ENM_extra_small, SIENM_multi_technology, Small_ENM_customer_cloud, SIENM_transport_only, OSIENM_transport_only, Small_CloudNative_ENM"/>
+      <!--       # NEW -->
+      <loadDriver name="NEType_COMECIM" description="COM ECIM NE"></loadDriver>
+      <loadDriver name="NEType_CPP" description="CPP NE"></loadDriver>
+      <loadDriver name="NEType_SNMP" description="SNMP NE"></loadDriver>
+      <loadDriver name="NEType_IP" description="IP NE"></loadDriver>
+
+      <loadDriver name="TotalNodes_Profile_A" description="Total Number of node for Profile_A RadioNode like"></loadDriver>
+      <loadDriver name="TotalNodes_Profile_B" description="Total Number of node for Profile_B CloudRun Like"></loadDriver>
+      <loadDriver name="TotalNodes_Profile_C" description="Total Number of node for Profile_C ToBeDefine"></loadDriver>
+<!--      <loadDriver name="DiskfileSystemOpendj_ChangeLogDB" description="Name of new disk partition filesystems required by opendj changeLogDB DB on pENM"></loadDriver>
+      <loadDriver name="DiskfileSystemOpendj_DB" description="Name of new disk partition filesystems required by opendj DB on pENM"></loadDriver>
+      <loadDriver name="DiskFileSystemSpaceMB_ChangeLogDB" description="Size of new disk partition filesystems required by opendj changeLogDB DB on pENM"></loadDriver>
+      <loadDriver name="DiskFileSystemSpaceMB_DB" description="Size of new disk partition filesystems required by opendj DB on pENM"></loadDriver>-->
+    </loadDrivers>
+    <minimumUnit>
+      <profile>
+        <cpuCores>2</cpuCores>
+        <cpuMinutes>0</cpuMinutes>
+        <peakCpuMinutes>0</peakCpuMinutes>
+        <memory>4096</memory>
+      </profile>
+      <profileConversionFormulae>
+        <cpuCores>2</cpuCores>
+        <cpuMinutes>0</cpuMinutes>
+        <peakCpuMinutes>0</peakCpuMinutes>
+        <memory>(openDJRssUage+LdapSearchProcess+openDJAggregatedProcess+openDJInstrumentation+openDJConsulMB+openDJOsUsageMB+openDJMinBytesFreeMB)</memory>
+      </profileConversionFormulae>
+    </minimumUnit>
+    <optimalUnit>
+      <profile>
+        <cpuCores>2</cpuCores>
+        <cpuMinutes>0</cpuMinutes>
+        <peakCpuMinutes>0</peakCpuMinutes>
+        <memory>4096</memory>
+      </profile>
+      <profileConversionFormulae>
+        <cpuCores>(IF(enm_deployment_type="Extra_Large_CloudNative_ENM",8,IF(enm_deployment_type="Extra_Large_ENM",8,IF(enm_deployment_type="Large_ENM",8,IF(enm_deployment_type="Medium_ENM",8,IF(enm_deployment_type="Large_Transport_only_ENM",8,IF(enm_deployment_type="Extra_Large_ENM_On_Rack_Servers",8,IF(enm_deployment_type="Small_CloudNative_ENM",4,IF(enm_deployment_type="SIENM_multi_technology",4,IF(enm_deployment_type="Small_ENM_customer_cloud",4,IF(enm_deployment_type="SIENM_transport_only",4,IF(enm_deployment_type="OSIENM_transport_only",4,2))))))))))))</cpuCores>
+        <cpuMinutes>0</cpuMinutes>
+        <peakCpuMinutes>0</peakCpuMinutes>
+        <memory>(openDJRssUage+LdapSearchProcess+openDJAggregatedProcess+openDJInstrumentation+openDJConsulMB+openDJOsUsageMB+openDJMinBytesFreeMB)</memory>
+      </profileConversionFormulae>
+    </optimalUnit>
+  </scaleUnit>
+  <parameters>
+    <property name="DefautOpendjConfigSizeMB_Small" defaultValue="100" description="OpenDJ Config Size in MB" usage="OPTIONAL" />
+    <property name="DefautOpendjConfigSizeMB_ExtraLarge" defaultValue="256" description="OpenDJ Config Size in MB" usage="OPTIONAL" />
+    <property name="openDJLogSize_CloudNative" defaultValue="3000" description="OpenDJ logs Size in MB considering For access. 11 files of 100MB each, For audit 11 files of  100MB each or more file lesser then 100MB, For errors N files at least one every day  size from 15k to 100M according to the opendj errors, For replication N files at least one every day size from 0k to 100M  according to the opendj replication activities ,For gc.log up to 7 files of average 5MB, For opendj_ldif one file  up to 50MB" usage="OPTIONAL" />
+    <property name="openDJLogSize_phy_and_Cloud" defaultValue="3000" description="OpenDJ logs Size in MB considering For access. 11 files of 100MB each, For audit 11 files of  100MB each or more file lesser then 100MB, For errors N files at least one every day  size from 15k to 100M according to the opendj errors, For replication N files at least one every day size from 0k to 100M  according to the opendj replication activities ,For gc.log up to 7 files of average 5MB, For opendj_ldif one file  up to 50MB" usage="OPTIONAL" />
+    <property name="openDJRssUage" defaultValue="2300" description="OpenDJ RSS usage including heap of 2GB as recommended in TORF-255992" usage="OPTIONAL" />
+    <property name="LdapSearchProcess" defaultValue="132" description="visible heap usage in cloud deployment of 700MB and KVM usage of 1300 indicate known usage of 600MB so we should include this as requried on top of minimum heap see ddp links in TORF-255992" usage="OPTIONAL" />
+    <property name="openDJAggregatedProcess" defaultValue="150" description="visible heap usage in cloud deployment of 700MB and KVM usage of 1300 indicate known usage of 600MB so we should include this as requried on top of minimum heap see ddp links in TORF-255992" usage="OPTIONAL" />
+    <property name="openDJInstrumentation" defaultValue="150" description="visible processes form Instr and DDC" usage="OPTIONAL" />
+    <property name="openDJConsulMB" defaultValue="50" description="visible processes form Instr and DDC" usage="OPTIONAL" />
+    <property name="openDJOsUsageMB" defaultValue="500" description="Operating System Usage" usage="OPTIONAL" />
+    <property name="openDJMinBytesFreeMB" defaultValue="256" description="min_free_kbytes default value of 256MB" usage="OPTIONAL" />
+    <property name="openDjLogSizeNoLoadMB" defaultValue="10" description="Log Volume per hour in MB without load" usage="OPTIONAL"/>
+    <property name="openDJLogSizeForSingleOperationMB" defaultValue="0.000445" description="Opendj Total Logs per hour in MB for single operation completed" usage="OPTIONAL"/>
+    <!--     #NEW Variables -->
+    <property name="openDJChangeLogPurgeDelay" defaultValue="8" description="Purge delay windows in hours" usage="OPTIONAL"/>
+    <property name="openDJDB_TimeToFitData" defaultValue="21" description="Hours need to insert all the necessary data into the DB" usage="OPTIONAL"/>
+    <property name="MaxUser_Managed" defaultValue="5000" description="Total Number of User Managed by ENM"/>
+    <property name="MaxProxyAccountUser_Managed" defaultValue="22000" description="Total Number of proxyaccount User Managed by ENM"/>
+    <!--     #NEW ChangeLogDB -->
+    <property name="openDJChangeLogSizeKB_hour_SingleNode_NO_LDAP_Profile_A" defaultValue="0.055" description="Opendj Total changelogdb size per hour in KB for single Node in Profile A - LDAP Disabled" usage="OPTIONAL"/>
+    <property name="openDJChangeLogSizeKB_hour_SingleNode_LDAP_Profile_A" defaultValue="1.29" description="Opendj Total changelogdb size per hour in KB for single Node in Profile A - LDAP Enabled" usage="OPTIONAL"/>
+    <!--     Values to be updated after testing the first node on Profile B-->
+    <property name="openDJChangeLogSizeKB_hour_SingleNode_NO_LDAP_Profile_B" defaultValue="0.055" description="Opendj Total changelogdb size per hour in KB for single Node in Profile A - LDAP Disabled" usage="OPTIONAL"/>
+    <property name="openDJChangeLogSizeKB_hour_SingleNode_LDAP_Profile_B" defaultValue="1.29" description="Opendj Total changelogdb size per hour in KB for single Node in Profile A - LDAP Enabled" usage="OPTIONAL"/>
+    <!--     Values to be updated after testing the first node on Profile C-->
+    <property name="openDJChangeLogSizeKB_hour_SingleNode_NO_LDAP_Profile_C" defaultValue="0.055" description="Opendj Total changelogdb size per hour in KB for single Node in Profile A - LDAP Disabled" usage="OPTIONAL"/>
+    <property name="openDJChangeLogSizeKB_hour_SingleNode_LDAP_Profile_C" defaultValue="1.29" description="Opendj Total changelogdb size per hour in KB for single Node in Profile A - LDAP Enabled" usage="OPTIONAL"/>
+    <property name="openDJChangeLogSizeKB_SingleUser" defaultValue="1.64" description="Opendj Total changelogdb size per single user added" usage="OPTIONAL"/>
+    <!--     Moltiplication Factor for peaks -->
+    <property name="openDJChangeLogPeaksMax" defaultValue="2.36" description="Max Moltiplication factor for changelogdb size during Peak events" usage="OPTIONAL"/>
+    <!--     NEW openDJ_database -->
+    <property name="openDJ_DBSizeKB_hour_SingleNode_NO_LDAP_Profile_A" defaultValue="0.59" description="Opendj Total DB size per hour in KB for single Node in Profile A LDAP Disabled" usage="OPTIONAL"/>
+    <property name="openDJ_DBSizeKB_hour_SingleNode_LDAP_Profile_A" defaultValue="3.1" description="Opendj Total DB size per hour in KB for single Node in Profile A LDAP Disabled" usage="OPTIONAL"/>
+    <!--     Values to be updated after testing the first node on Profile B-->
+    <property name="openDJ_DBSizeKB_hour_SingleNode_NO_LDAP_Profile_B" defaultValue="0.59" description="Opendj Total DB size per hour in KB for single Node in Profile B LDAP Disabled" usage="OPTIONAL"/>
+    <property name="openDJ_DBSizeKB_hour_SingleNode_LDAP_Profile_B" defaultValue="3.1" description="Opendj Total DB size per hour in KB for single Node in Profile B LDAP Disabled" usage="OPTIONAL"/>
+    <!--     Values to be updated after testing the first node on Profile C-->
+    <property name="openDJ_DBSizeKB_hour_SingleNode_NO_LDAP_Profile_C" defaultValue="0.59" description="Opendj Total DB size per hour in KB for single Node in Profile C LDAP Disabled" usage="OPTIONAL"/>
+    <property name="openDJ_DBSizeKB_hour_SingleNode_LDAP_Profile_C" defaultValue="3.1" description="Opendj Total DB size per hour in KB for single Node in Profile C LDAP Disabled" usage="OPTIONAL"/>
+    <property name="openDJ_DBSizeKB_SingleUser" defaultValue="1.1" description="Opendj Total DB size per single user added" usage="OPTIONAL"/>
+    <!--     Moltiplication Factor for peaks -->
+    <property name="openDJ_DBPeaksMax" defaultValue="1.7" description="Max Moltiplication factor for DB size during Peak events" usage="OPTIONAL"/>
+    <property name="rollbackEvaluationPeriod" defaultValue="72" description="Period in Hours to evaluate Rollback from UPG-RBENMSW01-01" usage="OPTIONAL"/>
+    <property name="OpendjdBSnap_Percent" defaultValue="10" description="expected filesystem snap percentage during upgrade" usage="OPTIONAL"/>
+  </parameters>
+  <deploymentDependencies>
+    <!-- ################ cENM Section   ################ -->
+    <deploymentDependency>
+      <groupId>com.ericsson.oss.itpf.sdk</groupId>
+      <artifactId>opendj</artifactId>
+      <version></version>
+      <alias>opendjInternalCalculations</alias>
+      <qualifier>GLOBAL</qualifier>
+      <loadDriverConverters>
+        <!--         List of nodes Nodes Already qualified -->
+        <!--         COMECIM+CPP -->
+        <loadConversionFormula dependencyLoadDriver="TotalNodes_Profile_A">(numberEnodebRadioNode+numberNodeBRadioNodeNe+numberMme+numberEpgNe+numberEpgOINe+numberVsapcNe+numberBscNe+numberPhySbgEcimNe+numberMtasEcimNe+numberCscfEcimNe+numbervRCNe+numbervPPNe+number5GRadioNodeNe+numberVTFRadioNodeNe+numbervSDNe+numberRvnfmEcimNe+numberWmgEcimNe+numberDscNe+numberEmeEcimNe+numberBspNe+numberIpWorksEcimNe+numberUpgEcimNe+numberHSSFENe+numberVirMrfEcimNe+numberPhyBgfEcimNe+numberVirBgfEcimNe+numberVirSbgEcimNe+numberVBscNE+numberPhyMrfEcimNe+numbervTIFNe+numberNeLSNe+numberPcgNe+numberPccNe+numberEdaNe+numberCcpcNe+numberCcrcNe+numberCcsmNe+numberCcdmNe+numberScNe+numberSharedcnfNe+numberRbsNe+numberRNCNe+numberMgw)</loadConversionFormula>
+        <!--         SNMP+IP -->
+        <loadConversionFormula dependencyLoadDriver="TotalNodes_Profile_B">(1+numberminilink6351Ne+numberminilink6352Ne+numberminilink6366Ne+numberminilink665xNe+numberminilink669xNe+numberminilinkCN210Ne+numberminilinkCN510R1Ne+numberminilinkCN510R2Ne+numberminilinkCN810R1Ne+numberminilinkCN810R2Ne+numberminilinkMW2Ne+numberminilinkPT2020Ne+numberminilinkTNLHNe+numberRouter6273Ne+numberRouter6673Ne+numberRouter6676Ne+numberRouter6678Ne+numberRouter6x71Ne+numberRouter8800Ne)</loadConversionFormula>
+        <loadConversionFormula dependencyLoadDriver="TotalNodes_Profile_C">1</loadConversionFormula>
+        <!-- ################ New pENM Section   ################ -->
+        <!-- NEW ChangeLogDB -->
+        <loadConversionFormula dependencyLoadDriver="openDJChangeLogSizeKB_hour_TotalNodes_Profile_A">((openDJChangeLogSizeKB_hour_SingleNode_NO_LDAP_Profile_A+openDJChangeLogSizeKB_hour_SingleNode_LDAP_Profile_A)*TotalNodes_Profile_A)</loadConversionFormula>
+        <loadConversionFormula dependencyLoadDriver="openDJChangeLogSizeKB_hour_TotalNodes_Profile_B">((openDJChangeLogSizeKB_hour_SingleNode_NO_LDAP_Profile_B+openDJChangeLogSizeKB_hour_SingleNode_LDAP_Profile_B)*TotalNodes_Profile_B)</loadConversionFormula>
+        <loadConversionFormula dependencyLoadDriver="openDJChangeLogSizeKB_hour_TotalNodes_Profile_C">((openDJChangeLogSizeKB_hour_SingleNode_NO_LDAP_Profile_C+openDJChangeLogSizeKB_hour_SingleNode_LDAP_Profile_A)*TotalNodes_Profile_C)</loadConversionFormula>
+        <loadConversionFormula dependencyLoadDriver="openDJChangeLogSizeKB_max_TotalUser">(openDJChangeLogSizeKB_SingleUser*(MaxProxyAccountUser_Managed+MaxUser_Managed))</loadConversionFormula>
+        <loadConversionFormula dependencyLoadDriver="openDJChangeLogmaxSizeKB">(((openDJChangeLogSizeKB_max_TotalUser+openDJChangeLogSizeKB_hour_TotalNodes_Profile_A+openDJChangeLogSizeKB_hour_TotalNodes_Profile_B+openDJChangeLogSizeKB_hour_TotalNodes_Profile_C)*openDJChangeLogPurgeDelay))</loadConversionFormula>
+        <!-- NEW DB -->
+        <loadConversionFormula dependencyLoadDriver="openDJ_DBSizeKB_hour_TotalNodes_Profile_A">((openDJ_DBSizeKB_hour_SingleNode_NO_LDAP_Profile_A+openDJ_DBSizeKB_hour_SingleNode_LDAP_Profile_A)*TotalNodes_Profile_A)</loadConversionFormula>
+        <loadConversionFormula dependencyLoadDriver="openDJ_DBSizeKB_hour_TotalNodes_Profile_B">((openDJ_DBSizeKB_hour_SingleNode_NO_LDAP_Profile_B+openDJ_DBSizeKB_hour_SingleNode_LDAP_Profile_B)*TotalNodes_Profile_B)</loadConversionFormula>
+        <loadConversionFormula dependencyLoadDriver="openDJ_DBSizeKB_hour_TotalNodes_Profile_C">((openDJ_DBSizeKB_hour_SingleNode_NO_LDAP_Profile_C+openDJ_DBSizeKB_hour_SingleNode_LDAP_Profile_C)*TotalNodes_Profile_C)</loadConversionFormula>
+        <loadConversionFormula dependencyLoadDriver="openDJ_DBSizeKB_max_TotalUser">(openDJ_DBSizeKB_SingleUser*(MaxProxyAccountUser_Managed+MaxUser_Managed))</loadConversionFormula>
+        <loadConversionFormula dependencyLoadDriver="openDJ_DBSizeKB">((openDJ_DBSizeKB_max_TotalUser+openDJ_DBSizeKB_hour_TotalNodes_Profile_A+openDJ_DBSizeKB_hour_TotalNodes_Profile_B+openDJ_DBSizeKB_hour_TotalNodes_Profile_C)*openDJDB_TimeToFitData)</loadConversionFormula>
+        <loadConversionFormula dependencyLoadDriver="openDJDBSizeMB">((openDJ_DBSizeKB*openDJ_DBPeaksMax)*1024)</loadConversionFormula>
+        <loadConversionFormula dependencyLoadDriver="openDJChangeLogSizeMB">((openDJChangeLogmaxSizeKB*openDJChangeLogPeaksMax)*1024)</loadConversionFormula>
+        <!--         According to the data from Dimensioning test  -->
+        <!--         This Fixed value should be used for cENM -->
+        <loadConversionFormula dependencyLoadDriver="openDJDBSizeMB_small">(5*1024)</loadConversionFormula>
+        <loadConversionFormula dependencyLoadDriver="openDJDBSizeMB_ExtraLarge">(10*1024)</loadConversionFormula>
+        <loadConversionFormula dependencyLoadDriver="openDJChangeLogSizeMB_small">(3*1024)</loadConversionFormula>
+        <loadConversionFormula dependencyLoadDriver="openDJChangeLogSizeMB_ExtraLarge">(10*1024)</loadConversionFormula>
+        <!--         This Fixed value should be used for pENM and vENM -->
+        <loadConversionFormula dependencyLoadDriver="openDJChangeLogSizeMB_pENM_ExtraLarge">(6*1024)</loadConversionFormula>
+        <loadConversionFormula dependencyLoadDriver="openDJDBSizeMB_pENM_ExtraLarge">(4*1024)</loadConversionFormula>
+        <loadConversionFormula dependencyLoadDriver="openDJChangeLogSizeMB_pENM_Large">(4.7*1024)</loadConversionFormula>
+        <loadConversionFormula dependencyLoadDriver="openDJDBSizeMB_pENM_Large">(2*1024)</loadConversionFormula>
+        <loadConversionFormula dependencyLoadDriver="openDJChangeLogSizeMB_pENM_Medium">(4.3*1024)</loadConversionFormula>
+        <loadConversionFormula dependencyLoadDriver="openDJDBSizeMB_pENM_Medium">(1.4*1024)</loadConversionFormula>
+        <loadConversionFormula dependencyLoadDriver="openDJChangeLogSizeMB_pENM_Small">(4*1024)</loadConversionFormula>
+        <loadConversionFormula dependencyLoadDriver="openDJDBSizeMB_pENM_Small">(1*1024)</loadConversionFormula>
+        <loadConversionFormula dependencyLoadDriver="openDJChangeLogSizeMB_pENM_ExtraSmall">(4*1024)</loadConversionFormula>
+        <loadConversionFormula dependencyLoadDriver="openDJDBSizeMB_pENM_ExtraSmall">(1*1024)</loadConversionFormula>
+      </loadDriverConverters>
+    </deploymentDependency>
+
+    <deploymentDependency>
+      <groupId>com.ericsson.oss.itpf.sdk</groupId>
+      <artifactId>xxx</artifactId>
+      <version></version>
+      <alias>openDj_ChangeLog_Partition</alias>
+      <qualifier>GLOBAL</qualifier>
+      <loadDriverConverters>
+        <loadConversionFormula dependencyLoadDriver="DiskFileSystemSpaceMB_ChangeLogDB">
+          IF(OR(enm_deployment_type="Extra_Large_ENM_On_Rack_Servers",enm_deployment_type="Extra_Large_ENM",enm_deployment_type="Large_Transport_only_ENM"),openDJChangeLogSizeMB_pENM_ExtraLarge,IF(enm_deployment_type="Extra_Large_CloudNative_ENM",openDJDBSizeMB_ExtraLarge,IF(OR(enm_deployment_type="Medium_ENM",enm_deployment_type="SIENM_transport_only"),openDJChangeLogSizeMB_pENM_Medium,IF(OR(enm_deployment_type="SIENM_multi_technology",enm_deployment_type="Small_ENM_customer_cloud"),openDJChangeLogSizeMB_pENM_Small,IF(enm_deployment_type="Small_CloudNative_ENM",openDJDBSizeMB_small,IF(OR(enm_deployment_type="Large_ENM",enm_deployment_type="OSIENM_transport_only"),openDJChangeLogSizeMB_pENM_Large,IF(enm_deployment_type="ENM_extra_small",openDJChangeLogSizeMB_pENM_ExtraSmall,0)))))))</loadConversionFormula>
+      </loadDriverConverters>
+    </deploymentDependency>
+
+    <deploymentDependency>
+      <groupId>com.ericsson.oss.itpf.sdk</groupId>
+      <artifactId>xxx</artifactId>
+      <version></version>
+      <alias>openDj_DB_Partition</alias>
+      <qualifier>GLOBAL</qualifier>
+      <loadDriverConverters>
+          <loadConversionFormula dependencyLoadDriver="DiskFileSystemSpaceMB_DB">
+          IF(OR(enm_deployment_type="Extra_Large_ENM_On_Rack_Servers",enm_deployment_type="Extra_Large_ENM",enm_deployment_type="Large_Transport_only_ENM"),openDJDBSizeMB_pENM_ExtraLarge,IF(enm_deployment_type="Extra_Large_CloudNative_ENM",openDJDBSizeMB_ExtraLarge,IF(OR(enm_deployment_type="Medium_ENM",enm_deployment_type="SIENM_transport_only"),openDJDBSizeMB_pENM_Medium,IF(OR(enm_deployment_type="SIENM_multi_technology",enm_deployment_type="Small_ENM_customer_cloud"),openDJDBSizeMB_pENM_Small,IF(enm_deployment_type="Small_CloudNative_ENM",openDJDBSizeMB_small,IF(OR(enm_deployment_type="Large_ENM",enm_deployment_type="OSIENM_transport_only"),openDJDBSizeMB_pENM_Large,if(enm_deployment_type="ENM_extra_small",openDJDBSizeMB_pENM_ExtraSmall,0)))))))</loadConversionFormula>
+      </loadDriverConverters>
+    </deploymentDependency>
+
+<!-- ################  cENM Section   ################ -->
+<!--    cENM environment already have the correct sizes so we are going to mantain the fixed value
+        Extralarge dB=10G ChangeLogDB=10G
+        Small dB=3G ChangeLogDB=5G-->
+    <!--PVC Filesystem-->
+    <deploymentDependency>
+      <groupId>com.ericsson.oss.itpf.sdk</groupId>
+      <artifactId>xxx</artifactId>
+      <version></version>
+      <alias>openDj_DB_PVC</alias>
+      <qualifier>GLOBAL</qualifier>
+      <loadDriverConverters>
+        <loadConversionFormula dependencyLoadDriver="dataVGfileSystemName">vg2_lv_var_ericsson/opendj</loadConversionFormula>
+        <loadConversionFormula dependencyLoadDriver="dataVGFileSystemSpaceMB">(DiskFileSystemSpaceMB_DB)</loadConversionFormula>
+        <loadConversionFormula dependencyLoadDriver="dataVGFileSnapSpacePercentage">(OpendjdBSnap_Percent)</loadConversionFormula>
+      </loadDriverConverters>
+    </deploymentDependency>
+
+    <deploymentDependency>
+      <groupId>com.ericsson.oss.itpf.sdk</groupId>
+      <artifactId>xxx</artifactId>
+      <version></version>
+      <alias>openDj_ChangeLog_PVC</alias>
+      <qualifier>GLOBAL</qualifier>
+      <loadDriverConverters>
+        <loadConversionFormula dependencyLoadDriver="dataVGfileSystemName">vg2_lv_var_ericsson/changelog-opendj</loadConversionFormula>
+        <loadConversionFormula dependencyLoadDriver="dataVGFileSystemSpaceMB">(DiskFileSystemSpaceMB_ChangeLogDB)</loadConversionFormula>
+        <loadConversionFormula dependencyLoadDriver="dataVGFileSnapSpacePercentage">(0)</loadConversionFormula>
+      </loadDriverConverters>
+    </deploymentDependency>
+
+    <deploymentDependency>
+      <groupId>com.ericsson.oss.itpf.sdk</groupId>
+      <artifactId>xxx</artifactId>
+      <version></version>
+      <alias>openDj_Config_PVC</alias>
+      <qualifier>GLOBAL</qualifier>
+      <loadDriverConverters>
+        <loadConversionFormula dependencyLoadDriver="dataVGfileSystemName">config-opendj</loadConversionFormula>
+        <loadConversionFormula dependencyLoadDriver="dataVGFileSystemSpaceMB">if(enm_deployment_type="Extra_Large_CloudNative_ENM",DefautOpendjConfigSizeMB_ExtraLarge,if(enm_deployment_type="Small_CloudNative_ENM",DefautOpendjConfigSizeMB_Small,0))</loadConversionFormula>
+        <loadConversionFormula dependencyLoadDriver="dataVGFileSnapSpacePercentage">(0)</loadConversionFormula>
+      </loadDriverConverters>
+    </deploymentDependency>
+
+    <deploymentDependency>
+      <groupId>com.ericsson.oss.itpf.sdk</groupId>
+      <artifactId>xxx</artifactId>
+      <version></version>
+      <alias>openDj_Logs_PVC</alias>
+      <qualifier>GLOBAL</qualifier>
+      <loadDriverConverters>
+        <loadConversionFormula dependencyLoadDriver="dataVGfileSystemName">vg2_lv_var_ericsson/logs/opendj</loadConversionFormula>
+        <loadConversionFormula dependencyLoadDriver="dataVGFileSystemSpaceMB">IF(OR(enm_deployment_type="Extra_Large_ENM_On_Rack_Servers",enm_deployment_type="Extra_Large_ENM",enm_deployment_type="Large_Transport_only_ENM"),openDJLogSize_phy_and_Cloud,IF(enm_deployment_type="Extra_Large_CloudNative_ENM",openDJLogSize_CloudNative,IF(OR(enm_deployment_type="Medium_ENM",enm_deployment_type="SIENM_transport_only"),openDJLogSize_phy_and_Cloud,IF(OR(enm_deployment_type="SIENM_multi_technology",enm_deployment_type="Small_ENM_customer_cloud"),openDJLogSize_phy_and_Cloud,IF(enm_deployment_type="Small_CloudNative_ENM",openDJLogSize_CloudNative,IF(OR(enm_deployment_type="Large_ENM",enm_deployment_type="OSIENM_transport_only"),openDJLogSize_phy_and_Cloud,if(enm_deployment_type="ENM_extra_small",openDJLogSize_phy_and_Cloud,0)))))))</loadConversionFormula>
+        <loadConversionFormula dependencyLoadDriver="dataVGFileSnapSpacePercentage">(0)</loadConversionFormula>
+      </loadDriverConverters>
+    </deploymentDependency>
+
+    <!-- BUR still point to fixed value openDJDBSizeMB_ExtraLarge and openDJDBSizeMB_small because it doesn't directly correlated to the DB size -->
+    <deploymentDependency>
+      <groupId>com.ericsson.oss.itpf.sdk</groupId>
+      <artifactId>xxx</artifactId>
+      <version></version>
+      <alias>openDj_DB_BUR</alias>
+      <qualifier>GLOBAL</qualifier>
+      <loadDriverConverters>
+        <loadConversionFormula dependencyLoadDriver="nasfileSystemName">opendj-backup</loadConversionFormula>
+        <loadConversionFormula dependencyLoadDriver="nasFileSystemSpaceMB">if(enm_deployment_type="Extra_Large_CloudNative_ENM",openDJDBSizeMB_ExtraLarge,if(enm_deployment_type="Small_CloudNative_ENM",openDJDBSizeMB_small,0))</loadConversionFormula>
+        <loadConversionFormula dependencyLoadDriver="nasFileSnapSpacePercentage">(0)</loadConversionFormula>
+      </loadDriverConverters>
+    </deploymentDependency>
+
+    <deploymentDependency>
+      <groupId>com.ericsson.oss.itpf.sdk</groupId>
+      <artifactId>opendj</artifactId>
+      <version/>
+      <alias>opendj-logs-size</alias>
+      <qualifier>GLOBAL</qualifier>
+      <loadDriverConverters>
+        <loadConversionFormula dependencyLoadDriver="openDJOperationCompletedPerHour">
+          (if(enm_deployment_type="Extra_Large_CloudNative_ENM",1500000,if(enm_deployment_type="Small_CloudNative_ENM",500000,if(enm_deployment_type="Extra_Large_ENM",4100000,if(enm_deployment_type="Large_ENM",1000000,if(enm_deployment_type="Medium_ENM",800000,if(enm_deployment_type="SIENM_transport_only",270000,if(enm_deployment_type="ENM_extra_small",16000,600000))))))))
+        </loadConversionFormula>
+        <loadConversionFormula dependencyLoadDriver="logSizeOpenDjPerHourMB">
+          (openDjLogSizeNoLoadMB+(openDJOperationCompletedPerHour * openDJLogSizeForSingleOperationMB))
+        </loadConversionFormula>
+      </loadDriverConverters>
+    </deploymentDependency>
+
+    <deploymentDependency>
+      <groupId>com.ericsson.oss.itpf.configuration</groupId>
+      <artifactId>ERICelasticsearch_CXP9031xxxx</artifactId>
+      <version />
+      <alias>opendj_logging</alias>
+      <qualifier>GLOBAL</qualifier>
+      <loadDriverConverters>
+        <loadConversionFormula dependencyLoadDriver="logSizeAuditSecurityPerDayMB">
+          (if(or(enm_deployment_type="Extra_Large_CloudNative_ENM",enm_deployment_type="Small_CloudNative_ENM"),(logSizeOpenDjPerHourMB * 24),0))
+        </loadConversionFormula>
+        <loadConversionFormula dependencyLoadDriver="logSizeErrorPerDayMB">(0)</loadConversionFormula>
+      </loadDriverConverters>
+    </deploymentDependency>
+  </deploymentDependencies>
+</configEntity>

@@ -1,0 +1,31 @@
+
+TOOL_DIR=/usr/bin
+
+AWK=$TOOL_DIR/awk
+CAT=$TOOL_DIR/cat
+CHOWN=$TOOL_DIR/chown
+CHMOD=$TOOL_DIR/chmod
+CP=$TOOL_DIR/cp
+CUT=$TOOL_DIR/cut
+ECHO=$TOOL_DIR/echo
+EGREP=$TOOL_DIR/egrep
+FIND=$TOOL_DIR/find
+GREP=$TOOL_DIR/grep
+HOST_NAME=$TOOL_DIR/hostname
+MV=$TOOL_DIR/mv
+PING=$TOOL_DIR/ping
+PS=$TOOL_DIR/ps
+TAR=$TOOL_DIR/tar
+RM=$TOOL_DIR/rm
+SED=$TOOL_DIR/sed
+SORT=$TOOL_DIR/sort
+TAIL=$TOOL_DIR/tail
+TOUCH=$TOOL_DIR/touch
+GREP_W="$TOOL_DIR/grep -w"
+RM_RF="$TOOL_DIR/rm -rf"
+CRONTAB=$TOOL_DIR/crontab
+LOCKFILE=$TOOL_DIR/lockfile
+OPENSSL=$TOOL_DIR/openssl
+MKDIR=$TOOL_DIR/mkdir
+WHOAMI=$TOOL_DIR/whoami
+

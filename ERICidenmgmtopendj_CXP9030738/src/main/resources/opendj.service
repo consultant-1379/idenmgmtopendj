@@ -1,0 +1,18 @@
+[Unit]
+Description=OpenDJ
+Before=shutdown.target
+After=network-online.target network.service consul.service default.target
+Conflicts=shutdown.target
+
+[Service]
+Type=forking
+PIDFile=/var/run/opendj.pid
+TimeoutSec=12min
+KillMode=process
+RemainAfterExit=yes
+ExecStart=/etc/rc.d/init.d/opendj start
+ExecStop=/etc/rc.d/init.d/opendj stop
+SuccessExitStatus=143
+
+[Install]
+WantedBy=default.target

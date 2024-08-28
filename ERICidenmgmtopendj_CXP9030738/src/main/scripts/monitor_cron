@@ -1,0 +1,1 @@
+33  * * * * root sh /opt/ericsson/com.ericsson.oss.security/idenmgmt/opendj/bin/monitor_replication.sh CRON_MODE  > /dev/null 2>&1

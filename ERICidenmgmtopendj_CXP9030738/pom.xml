@@ -1,0 +1,365 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
+
+  <modelVersion>4.0.0</modelVersion>
+  <parent>
+    <artifactId>idenmgmtopendj</artifactId>
+    <groupId>com.ericsson.nms.security</groupId>
+    <version>1.119.2-SNAPSHOT</version>
+  </parent>
+  <artifactId>ERICidenmgmtopendj_CXP9030738</artifactId>
+  <packaging>${rpm.packaging}</packaging>
+  <name>[${project.parent.artifactId}] CXP module</name>
+
+  <properties>
+    <mavenDependencyPluginVer>2.8</mavenDependencyPluginVer>
+    <openDjVer>7.3.3</openDjVer>
+
+    <!--<com.ericsson.oss.rpm.architecture>noarch</com.ericsson.oss.rpm.architecture>-->
+    <rpm-root>opt</rpm-root>
+    <comp-name>ericsson</comp-name>
+    <install-path>com.ericsson.oss.security/idenmgmt</install-path>
+    <publish_artifact>true</publish_artifact>
+  </properties>
+
+  <dependencies>
+  <dependency>
+      <groupId>org.forgerock.opendj</groupId>
+      <artifactId>ds</artifactId>
+      <type>zip</type>
+      <scope>provided</scope>
+      <version>${openDjVer}</version>
+     </dependency>
+  </dependencies>
+
+  <build>
+
+    <!-- block resources was added to autoset the file
+     target/classes/version (see mapping ) using the property openDjVer
+     see maven filtering
+     for this reason the file src/main/resources/version
+     contains a reference to openDjVer -->
+    <resources>
+       <resource>
+          <directory>src/main/resources</directory>
+          <filtering>true</filtering>
+       </resource>
+    </resources>
+
+
+    <plugins>
+
+      <plugin>
+        <artifactId>maven-dependency-plugin</artifactId>
+        <version>${mavenDependencyPluginVer}</version>
+        <executions>
+          <execution>
+            <id>copy</id>
+            <phase>process-sources</phase>
+            <goals>
+              <goal>copy</goal>
+            </goals>
+            <configuration>
+              <artifactItems>
+                <artifactItem>
+                  <groupId>org.forgerock.opendj</groupId>
+                  <artifactId>ds</artifactId>
+                  <type>zip</type>
+                  <version>${openDjVer}</version>
+                  <overWrite>true</overWrite>
+                  <outputDirectory>${project.build.directory}</outputDirectory>
+                  <destFileName>opendj.zip</destFileName>
+                </artifactItem>
+              </artifactItems>
+            </configuration>
+          </execution>
+        </executions>
+      </plugin>
+
+      <plugin>
+        <groupId>org.codehaus.mojo</groupId>
+        <artifactId>rpm-maven-plugin</artifactId>
+        <configuration>
+            <group>Applications/System</group>
+            <requires>
+                <require>EXTRserverjre_CXP9035480</require>
+                <require>unzip</require>
+                <require>ERICsmartcertificatemonitoringutility_CXP9041682</require>
+            </requires>
+          <mappings>
+
+            <mapping>
+              <directory>/etc/init.d</directory>
+              <directoryIncluded>false</directoryIncluded>
+              <filemode>755</filemode>
+              <sources>
+                <source>
+                  <location>src/main/scripts/opendj</location>
+                </source>
+              </sources>
+            </mapping>
+
+             <!-- config belongs under idenmgmt -->
+            <mapping>
+              <directory>/${rpm-root}/${comp-name}/${install-path}/config</directory>
+              <filemode>755</filemode>
+              <sources>
+                <source>
+                  <location>src/main/resources/datastore.properties</location>
+	        </source>
+              </sources>
+            </mapping>
+
+	    <!-- deploymentId and deploymentIdPassword -->
+            <mapping>
+              <directory>/${rpm-root}/${comp-name}/${install-path}/config</directory>
+              <filemode>755</filemode>
+              <sources>
+                <source>
+                  <location>src/main/resources/deploymentId.cnf</location>
+                </source>
+              </sources>
+            </mapping>
+
+            <mapping>
+              <directoryIncluded>false</directoryIncluded>
+              <filemode>644</filemode>
+              <username>root</username>
+              <groupname>root</groupname>
+              <directory>/usr/lib/systemd/system</directory>
+              <sources>
+                <source>
+                  <location>src/main/resources/opendj.service</location>
+                </source>
+              </sources>
+            </mapping>
+
+            <!-- bin and pkgs belong in idenmgmt/opendj -->
+            <mapping>
+              <directory>/${rpm-root}/${comp-name}/${install-path}/opendj/bin</directory>
+              <filemode>755</filemode>
+              <sources>
+                <source>
+                  <location>src/main/scripts/bintools.sh</location>
+                </source>
+                <source>
+                  <location>src/main/scripts/postinstall.sh</location>
+                </source>
+                <source>
+                  <location>src/main/scripts/unindex_search.sh</location>
+                </source>
+                <source>
+                  <location>src/main/scripts/monitor_replication.sh</location>
+                </source>
+                <source>
+                  <location>src/main/scripts/common.sh</location>
+                </source>
+                <source>
+                  <location>src/main/scripts/install_opendj.sh</location>
+                </source>
+                <source>
+                  <location>src/main/scripts/config_opendj_replication.sh</location>
+                </source>
+                <source>
+                  <location>src/main/scripts/extract_certs_if_required.sh</location>
+                </source>
+                <source>
+                  <location>src/main/scripts/dsrepl_init_from_peer.sh</location>
+                </source>
+                <source>
+                  <location>src/main/scripts/dsrepl_status.sh</location>
+                </source>
+                <source>
+                  <location>src/main/scripts/replication_status.sh</location>
+                </source>
+                <source>
+                  <location>src/main/scripts/infodiffexportdb.sh</location>
+                </source>
+                <source>
+                  <location>src/main/scripts/opendj_backup.sh</location>
+                </source>
+                <source>
+                  <location>src/main/scripts/opendj_restore.sh</location>
+                </source>
+                <source>
+                  <location>src/main/scripts/config_common.sh</location>
+                </source>
+                <source>
+                  <location>src/main/scripts/config_opendj_password.sh</location>
+                </source>
+                <source>
+                  <location>src/main/scripts/config_opendj_sso_password.sh</location>
+                </source>
+                <source>
+                  <location>src/main/scripts/fix_posix_users.sh</location>
+                </source>
+                <source>
+                  <location>src/main/scripts/check_if_duplicated_uidNumber.sh</location>
+                </source>
+                <source>
+                  <location>src/main/scripts/compare_uid_postgresql_ldap.sh</location>
+                </source>
+                <source>
+                  <location>src/main/scripts/verify_posix_users_after_upgrade.sh</location>
+                </source>
+                <source>
+                  <location>src/main/scripts/fault_condition_recovery.sh</location>
+                </source>
+                <source>
+                  <location>src/main/scripts/DeleteOldDBDirs65.sh</location>
+                </source>
+              </sources>
+            </mapping>
+            <mapping>
+              <directory>/${rpm-root}/${comp-name}/${install-path}/opendj/pkg</directory>
+              <filemode>755</filemode>
+              <sources>
+                <source>
+                  <location>target/opendj.zip</location>
+                </source>
+<!--
+                <source>
+                  <location>src/main/patches/OpenDJ-6.5.0-patches.tar</location>
+                </source>
+-->
+              </sources>
+            </mapping>
+            <mapping>
+              <directory>/${rpm-root}/${comp-name}/${install-path}/opendj/config</directory>
+              <filemode>755</filemode>
+              <sources>
+                <source>
+                  <location>src/main/resources/opendj-ssl-ext-ca.cnf</location>
+                </source>
+                <source>
+                  <location>src/main/resources/version</location>
+                </source>
+                <source>
+                    <location>src/main/resources/opendj_log_policy.cnf</location>
+                </source>
+              </sources>
+            </mapping>
+
+            <mapping>
+              <directory>/${rpm-root}/opendj/template/config/schema</directory>
+              <directoryIncluded>false</directoryIncluded>
+              <filemode>775</filemode>
+              <sources>
+                <source>
+                   <location>src/main/resources/99-user.ldif</location>
+                </source>
+              </sources>
+            </mapping>
+
+            <mapping>
+              <directory>/${rpm-root}/${comp-name}/${install-path}/opendj/config</directory>
+              <filemode>644</filemode>
+              <sources>
+                <source>
+                   <location>src/main/resources/users-v1.json</location>
+                </source>
+              </sources>
+            </mapping>
+
+              <mapping>
+                  <directory>/${rpm-root}/${comp-name}/${install-path}/opendj/certs/certificates</directory>
+                  <filemode>440</filemode>
+                  <sources>
+                      <source>
+                          <location>src/main/resources/certificates</location>
+                      </source>
+                  </sources>
+              </mapping>
+
+            <mapping>
+              <directory>/${rpm-root}/${comp-name}/${install-path}/opendj/certs/idenmgmt</directory>
+              <filemode>440</filemode>
+              <sources>
+                <source>
+                  <location>src/main/resources/idenmgmt</location>
+                </source>
+              </sources>
+            </mapping>
+
+              <mapping>
+                  <directory>/ericsson/opendj/opendj/bin/</directory>
+                  <filemode>755</filemode>
+                  <sources>
+                      <source>
+                          <location>src/main/scripts/opendj_monitor.sh</location>
+                      </source>
+                      <source>
+                          <location>src/main/scripts/opendj_check_up.sh</location>
+                      </source>
+                      <source>
+                          <location>src/main/scripts/opendj_run_replication.sh</location>
+                      </source>
+                      <source>
+                        <location>src/main/scripts/renew.sh</location>
+                      </source>
+                      <source>
+                        <location>src/main/scripts/removetls1.sh</location>
+                      </source>
+                      <source>
+                        <location>src/main/scripts/newRootCA.sh</location>
+                      </source>
+                      <source>
+                        <location>src/main/scripts/newOpendjCertificates.sh</location>
+                      </source>
+                      <source>
+                          <location>src/main/scripts/stop-ds-mod</location>
+                      </source>
+                  </sources>
+              </mapping>
+
+              <mapping>
+                  <directory>/opt/opendj/bin/</directory>
+                  <filemode>755</filemode>
+                  <sources>
+                      <source>
+                          <location>src/main/scripts/opendj_collect_logs_db.sh</location>
+                      </source>
+                      <source>
+                          <location>src/main/scripts/stop-ds-mod</location>
+                      </source>
+                  </sources>
+              </mapping>
+
+              <mapping>
+                  <directory>/etc/security/limits.d/</directory>
+                  <directoryIncluded>false</directoryIncluded>
+                  <filemode>644</filemode>
+                  <sources>
+                      <source>
+                          <location>src/main/resources/opendj_custom.conf</location>
+                      </source>
+                  </sources>
+              </mapping>
+
+          </mappings>
+
+          <postinstallScriptlet>
+            <scriptFile>src/main/scripts/postinstall.sh</scriptFile>
+            <fileEncoding>utf-8</fileEncoding>
+          </postinstallScriptlet>
+          <!--
+          <preremoveScriptlet>
+            <scriptFile>src/main/scripts/uninstall_opendj.sh</scriptFile>
+            <fileEncoding>utf-8</fileEncoding>
+          </preremoveScriptlet>
+           -->
+        </configuration>
+      </plugin>
+    </plugins>
+  </build>
+
+<!--
+  <repositories>
+  <repository>
+    <id>prototype</id>
+    <url>https://arm1s11-eiffel004.eiffel.gic.ericsson.se:8443/nexus/content/repositories/prototype</url>
+    </repository>
+  </repositories> 
+-->
+
+</project>

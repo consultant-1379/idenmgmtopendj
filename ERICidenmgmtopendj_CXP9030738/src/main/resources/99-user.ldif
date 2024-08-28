@@ -1,0 +1,29 @@
+dn: cn=schema
+objectClass: top
+objectClass: ldapSubentry
+objectClass: subschema
+cn: schema
+ldapSyntaxes: ( 1.3.6.1.4.1.26027.1.3.7 DESC 'Types of users' X-ENUM ( 'enmUser' 'cppUser' 'laadUser' 'M2MUser' ) )
+attributeTypes: ( lastLoginTime-oid NAME 'lastLoginTime' DESC 'Last time the user logged in' EQUALITY generalizedTimeMatch ORDERING generalizedTimeOrderingMatch SYNTAX 1.3.6.1.4.1.1466.115.121.1.24 SINGLE-VALUE NO-USER-MODIFICATION USAGE directoryOperation X-ORIGIN 'RFC 4519' )
+attributetypes: ( userType-oid NAME 'userType' DESC 'This attribute holds the user type' SYNTAX 1.3.6.1.4.1.26027.1.3.7 )
+attributeTypes: ( roleTG-oid NAME 'roleTG' DESC 'This attribute holds the pairs role:target group' SYNTAX 1.3.6.1.4.1.1466.115.121.1.26 )
+attributeTypes: ( ecimRole-oid NAME 'ecimRole' DESC 'Instances of this attribute type hold roles details for COM/ECIM users' EQUALITY caseIgnoreMatch ORDERING caseIgnoreOrderingMatch SUBSTR caseIgnoreSubstringsMatch SYNTAX 1.3.6.1.4.1.1466.115.121.1.15 USAGE userApplications X-ORIGIN 'RFC 4519' )
+attributeTypes: ( target-oid NAME 'target' DESC 'Instances of this attribute type hold resources target info.' EQUALITY caseIgnoreMatch ORDERING caseIgnoreOrderingMatch SUBSTR caseIgnoreSubstringsMatch SYNTAX 1.3.6.1.4.1.1466.115.121.1.15 USAGE userApplications X-ORIGIN 'RFC 4519' )
+attributeTypes: ( taskProfile-oid NAME 'taskProfile' DESC 'Instances of this attribute type hold the CPP taskprofile names.' EQUALITY caseIgnoreMatch ORDERING caseIgnoreOrderingMatch SUBSTR caseIgnoreSubstringsMatch SYNTAX 1.3.6.1.4.1.1466.115.121.1.15 USAGE userApplications X-ORIGIN 'RFC 4519' )
+attributeTypes: ( clientConfigEntry-oid NAME 'clientConfigEntry' EQUALITY caseIgnoreMatch SUBSTR caseIgnoreSubstringsMatch SYNTAX 1.3.6.1.4.1.1466.115.121.1.15{32768}  X-ORIGIN 'RFC 4519' )
+attributeTypes: ( 1.3.6.1.4.1.193.207.381 NAME 'ericssonAuthMode' DESC 'Ericsson auth mode' EQUALITY caseIgnoreIA5Match SUBSTR caseIgnoreIA5SubstringsMatch SYNTAX 1.3.6.1.4.1.1466.115.121.1.26 )
+attributeTypes: ( 1.3.6.1.4.1.193.207.373 NAME 'ericssonUserAuthorizationScope' DESC 'Ericsson User Authorization Scope' EQUALITY caseIgnoreIA5Match SUBSTR caseIgnoreIA5SubstringsMatch SYNTAX 1.3.6.1.4.1.1466.115.121.1.26 )
+attributeTypes: ( 1.3.6.1.4.1.193.207.372 NAME 'ericssonUserAuthenticationScope' DESC 'Ericsson User Authentication Scope' EQUALITY caseIgnoreIA5Match SYNTAX 1.3.6.1.4.1.1466.115.121.1.26 )
+attributeTypes: ( 2.16.840.1.113730.3.1.1066 NAME 'iplanet-am-session-max-idle-time' DESC 'Max Session Idle Time' SYNTAX 1.3.6.1.4.1.1466.115.121.1.15 X-ORIGIN 'OpenSSO' )
+attributeTypes: ( 2.16.840.1.113730.3.1.1065 NAME 'iplanet-am-session-max-session-time' DESC 'Max Service Time' SYNTAX 1.3.6.1.4.1.1466.115.121.1.15 X-ORIGIN 'OpenSSO' )
+objectClasses: ( enmRole-oid NAME 'enmRole' DESC 'This data type is used to hold data for an  ENMS User Role.' SUP top AUXILIARY MUST cn MAY description X-ORIGIN 'RFC 4519' )
+objectClasses: ( taskprofileslist-oid NAME 'taskProfilesList' DESC 'This entry holds a list of CPP Task Profiles' SUP top STRUCTURAL MUST ( cn $ taskProfile ) MAY description X-ORIGIN 'RFC 4519' )
+objectClasses: ( targetGroup-oid NAME 'targetGroup' DESC 'Instances of this type hold resources targets.' SUP top AUXILIARY MUST ( target $ cn ) MAY description X-ORIGIN 'RFC 4519' )
+objectClasses: ( ecim-oid NAME 'ecim' DESC 'A tree entry with this objectclass holds details on a COM/ECIM user roles' SUP top AUXILIARY MUST ( ecimRole $ cn ) MAY description X-ORIGIN 'RFC 4519' )
+objectClasses: ( cpp-oid NAME 'cpp' DESC 'A Tree entry with this objectclass is used to hold info on CPP TaskProfiles.' SUP top AUXILIARY MUST ( cn $ taskProfile ) MAY description X-ORIGIN 'RFC 4519' )
+objectclasses: ( userTypeOC-oid NAME 'userTypeOC' SUP top AUXILIARY MUST userType MAY roleTG X-ORIGIN 'RFC 4519' )
+objectClasses: ( clientConfig-oid NAME 'clientConfig' SUP top AUXILIARY MAY clientConfigEntry )
+objectClasses: ( 1.3.6.1.4.1.193.207.382 NAME 'ericssonAuth' DESC 'Ericsson authentication and authorization' SUP top AUXILIARY MAY ( ericssonAuthMode ) )
+objectClasses: ( 1.3.6.1.4.1.193.207.374 NAME 'ericssonUserAuthentication' SUP top AUXILIARY MAY ( ericssonUserAuthenticationScope ) )
+objectClasses: ( 1.3.6.1.4.1.193.207.376 NAME 'ericssonUserAuthorization' SUP top AUXILIARY MAY ( ericssonUserAuthorizationScope ) )
+objectClasses: ( 2.16.840.1.113730.3.2.175 NAME 'iplanet-am-session-service' DESC 'Session Service OC' SUP top AUXILIARY MAY ( iplanet-am-session-max-session-time $ iplanet-am-session-max-idle-time ) X-ORIGIN 'OpenSSO' )

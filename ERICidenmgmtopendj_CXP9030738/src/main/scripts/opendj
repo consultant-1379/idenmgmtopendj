@@ -1,0 +1,773 @@
+#!/bin/bash
+#     NOTE:
+#        This file was created by running:
+#                cd /opt/opendj/
+#                create-rc-script -f /etc/init.d/opendj
+#
+#
+##########################################################################
+# CDDL HEADER START
+#
+# The contents of this file are subject to the terms of the
+# Common Development and Distribution License, Version 1.0 only
+# (the "License").  You may not use this file except in compliance
+# with the License.
+#
+# You can obtain a copy of the license at
+# trunk/opends/resource/legal-notices/CDDLv1_0.txt
+# or http://forgerock.org/license/CDDLv1.0.html.
+# See the License for the specific language governing permissions
+# and limitations under the License.
+#
+# When distributing Covered Code, include this CDDL HEADER in each
+# file and include the License file at
+# trunk/opends/resource/legal-notices/CDDLv1_0.txt.  If applicable,
+# add the following below this CDDL HEADER, with the fields enclosed
+# by brackets "[]" replaced with your own identifying information:
+#      Portions Copyright [yyyy] [name of copyright owner]
+#
+# CDDL HEADER END
+# chkconfig: 345 95 5
+# description: Control the OpenDJ Directory Server
+
+# Source functions library.
+if [ "${cENM_DEPLOYMENT}" != TRUE ]; then
+. /etc/init.d/functions
+fi
+
+if [ -f /opt/ericsson/com.ericsson.oss.security/idenmgmt/opendj/variables ]; then
+    . /opt/ericsson/com.ericsson.oss.security/idenmgmt/opendj/variables
+fi
+
+if [ -f /opt/ericsson/com.ericsson.oss.security/idenmgmt/opendj/bin/bintools.sh ]; then
+    . /opt/ericsson/com.ericsson.oss.security/idenmgmt/opendj/bin/bintools.sh
+fi
+
+SCRIPT_NAME=$(basename "$0")
+CONFIGURE_SCRIPT=/opt/ericsson/com.ericsson.oss.security/idenmgmt/opendj/bin/install_opendj.sh
+REPLICATION_SCRIPT=/opt/ericsson/com.ericsson.oss.security/idenmgmt/opendj/bin/config_opendj_replication.sh
+REPLICATION_SCRIPT_RHEL7_UPGRADE_PATH=/opt/ericsson/com.ericsson.oss.security/idenmgmt/opendj/bin/config_replication_and_recover_from_peer_db.sh
+REPLICATION_RUN_SCRIPT=/ericsson/opendj/opendj/bin/opendj_run_replication.sh
+INSTALL_STAGE_OPTION_FILE=/opt/ericsson/com.ericsson.oss.security/idenmgmt/opendj/config/opendj-install-info.txt
+INSTALL_STAGE_OPTION=0
+NUMA_VALUE=""
+DMIDECODE=/usr/sbin/dmidecode
+LOG_DIR="/var/log/opendj"
+LOG_FILE="$LOG_DIR/opendj-numa.log"
+LOCKFILE=/usr/bin/lockfile
+SHARE_ROOT=/ericsson/tor/data
+LMS_HOSTNAME="ms-1"
+# OPENDJ_JAVA_HOME="/usr/java/latest/jre"
+OPENDJ_JAVA_HOME=""
+RHEL7_UPGRADE_PATH_EXPECTED_VALUE="rh7_uplift_opendj"
+
+# INFO logger
+info()
+{
+  logger -s -t ENM_OPENDJ -p user.notice "INFORMATION ( ${SCRIPT_NAME} ): $*"
+}
+
+# ERROR logger
+error()
+{
+  logger -s -t ENM_OPENDJ -p user.err "ERROR ( ${SCRIPT_NAME} ): $*"
+}
+# NUMA logger
+log_message()
+{
+   ts=`/bin/date "+%F:%H:%M:%S%:z"`
+   msg="$ts: $1"
+   echo $msg
+   echo $msg >> $LOG_FILE
+}
+
+# It will be used in case of upgrade or Simple DS start
+# It will be not used in case of Initial Install
+set_OPENDJ_JAVA_HOME()
+{
+  # Define OPENDJ_JAVA_HOME
+  JDK11=$(find /usr -name java | grep jdk11 | $SED "s|/bin/java||g")
+    if [ -z $JDK11 ]; then
+        error "Java 11 seems not installed!"
+        return 1
+    fi
+    LATEST=$(readlink -f /usr/java/latest | grep jdk11)
+    if [ -z $LATEST ]; then
+        OPENDJ_JAVA_HOME=$JDK11
+    else
+        if [ $JDK11 == $LATEST ]; then
+            OPENDJ_JAVA_HOME="/usr/java/latest"
+        else
+            OPENDJ_JAVA_HOME=$JDK11
+        fi
+    fi
+    info "OPENDJ_JAVA_HOME=$OPENDJ_JAVA_HOME"
+
+    # OPENDJ_JAVA_HOME for opendj user
+    if [ -f /home/opendj/.bashrc ]; then
+      BASHRC_OPENDJ_JAVA_HOME=$(grep "^OPENDJ_JAVA_HOME" /home/opendj/.bashrc |cut -d"=" -f2)
+      info "OLD OPENDJ_JAVA_HOME for user opendj: $BASHRC_OPENDJ_JAVA_HOME"
+      if [ -z $BASHRC_OPENDJ_JAVA_HOME ]; then
+          info "Writing OPENDJ_JAVA_HOME for user opendj (opendj)"
+          echo "OPENDJ_JAVA_HOME=$OPENDJ_JAVA_HOME" >> /home/opendj/.bashrc
+          echo "export OPENDJ_JAVA_HOME" >> /home/opendj/.bashrc
+      else
+          info "Changing OPENDJ_JAVA_HOME for user opendj (opendj)"
+          sed -i "s|$BASHRC_OPENDJ_JAVA_HOME|$OPENDJ_JAVA_HOME|g" /home/opendj/.bashrc
+      fi
+    fi
+
+    # Change OPENDJ_JAVA_HOME in java.properties
+    if [ -f /opt/opendj/config/java.properties ]; then
+      info "OPENDJ_JAVA_HOME changing on java.properties"
+      info "Physical Environment"
+      OLD_OPENDJ_JAVA_HOME=$(grep "^default.java-home" /opt/opendj/config/java.properties |cut -d"=" -f2)
+      sed -i "s|$OLD_OPENDJ_JAVA_HOME|$OPENDJ_JAVA_HOME|g" /opt/opendj/config/java.properties
+    fi
+
+    if [ -f /ericsson/opendj/opendj/config/java.properties ]; then
+      info "OPENDJ_JAVA_HOME changing on java.properties"
+      info "Cloud environments"
+      OLD_OPENDJ_JAVA_HOME=$(grep "^default.java-home" /ericsson/opendj/opendj/config/java.properties |cut -d"=" -f2)
+      sed -i "s|$OLD_OPENDJ_JAVA_HOME|$OPENDJ_JAVA_HOME|g" /ericsson/opendj/opendj/config/java.properties
+    fi
+
+
+}
+
+diskspacecheck()
+{
+  if [ -d $INSTALL_ROOT/db/userRoot/ ]; then
+     # Set the percentage of used disk space on the OpenDJ partition (0-100). If exceeded OpenDJ will fail
+     SPACELIMIT=95
+     #USEDSPACE=$(df -lHP $INSTALL_ROOT/db/userRoot/ | sed '1d' | awk '{print $5}' | cut -d'%' -f1)
+     info "Opendj diskspacecheck started..."
+     USEDSPACE=$(df -HP $INSTALL_ROOT/db/userRoot/ | sed '1d' | awk '{print $5}' | cut -d'%' -f1)
+     info "Opendj diskspacecheck USEDSPACE = $USEDSPACE"
+     if [ "$USEDSPACE" -gt "$SPACELIMIT" ]; then
+        return 1
+     else
+        return 0
+     fi
+  else
+     info "OpenDJ folder empty or not existing, continuing the script"
+     return 0
+  fi
+}
+
+# Check if the opendj 3PP has been extracted to the FS
+#configuration install_opendj.sh script should be run if
+#  -> this is the first installation or
+#  -> this is the upgrade
+
+run_configuration() {
+#if the install_opendj script should be performed
+     local run_script=1
+#INSTALL_STAGE_OPTION_FILE contains info:
+# 1 - for installation
+# 2 - for upgrade
+# any other is unclassified and treated as an error
+
+  if [ ! -f ${INSTALL_STAGE_OPTION_FILE} ]; then
+     error "${INSTALL_STAGE_OPTION_FILE} does not exist. Suspected bad RPM installation"
+     exit 1
+  fi
+
+  INSTALL_STAGE_OPTION=$( cat ${INSTALL_STAGE_OPTION_FILE} )
+  if [ -z  "${INSTALL_STAGE_OPTION}" ]; then
+     info "Problem reading install/upgrade option from ${INSTALL_STAGE_OPTION_FILE}, setting option to '1' (install)"
+     INSTALL_STAGE_OPTION=1
+  fi
+
+  if [ -f ${INSTALL_ROOT}/setup ]; then
+     if [ $INSTALL_STAGE_OPTION -ne 2 ]; then
+         info "OpenDJ has been installed, not invoking configure script"
+         run_script=0
+     else
+         info "Invoking configure script, due to upgrade"
+     fi
+  else
+     if [ $INSTALL_STAGE_OPTION -eq 1 ]; then
+         info "Invoking configure script, due to installation"
+     else
+         info "Upgrade can not be performed, as the ${INSTALL_ROOT}/setup does not exist"
+         run_script=0
+     fi
+  fi
+
+  return ${run_script}
+}
+
+#######################################
+# Action :
+#   stop OpenDJ
+# Arguments:
+#   None
+# Returns:
+#   0 - success
+#   any other code - failure
+#######################################
+stop(){
+  #Setting INSTALL_ROOT for service opendj status without using global.properties
+  if [ -f /ericsson/opendj/opendj/setup ]; then
+        INSTALL_ROOT=/ericsson/opendj/opendj
+  else
+        INSTALL_ROOT=/opt/opendj
+  fi
+  export INSTALL_ROOT
+    su -c "${INSTALL_ROOT}/bin/stop-ds-mod --quiet" - opendj
+    return ${?}
+}
+
+# Call configuration script if not previously called
+
+configure_if_required() {
+
+  run_configuration
+  res=${?}
+
+  if [[ "${DDC_ON_CLOUD}" == TRUE ]]; then
+      info "installation on cloud"
+      if [ -f ${INSTALL_ROOT}/setup ]; then
+         if [ -d ${INSTALL_ROOT}/opendj_first_installation_on_going ]; then 
+          info "this is initiall install - opendj_first_installation_on_going is present"
+          INSTALL_STAGE_OPTION=1
+          res=1
+         fi
+      fi
+  fi
+
+  #save requested operation in opendj-install-info.txt in a local variable for restoring if CONFIGURE_SCRIPT failed
+  INSTALL_STAGE_OPTION_LOCAL=$( cat ${INSTALL_STAGE_OPTION_FILE} )
+  #inserts 1 to opendj-install-info.txt to avoid constant opendj upgrade.
+  echo 1 > $INSTALL_STAGE_OPTION_FILE
+
+  if [ ${res} -eq 1  ] ; then
+     ${CONFIGURE_SCRIPT} ${INSTALL_STAGE_OPTION}
+     _ret_val=${?}
+     if [ ${_ret_val} -ne 0 ]; then
+        error "OpenDJ configure script failed"
+        echo ${INSTALL_STAGE_OPTION_LOCAL} > ${INSTALL_STAGE_OPTION_FILE}
+        stop
+        exit ${_ret_val}
+    fi
+  fi
+}
+
+#######################################
+# Action :
+#   metadata
+# Arguments:
+#   None
+# Returns:
+#   Service description
+#######################################
+metadata()
+{
+    $CAT <<END
+<?xml version="1.0"?>
+<!DOCTYPE resource-agent SYSTEM "ra-api-1.dtd">
+
+<resource-agent name="opendj">
+<version>1.0</version>
+
+<longdesc lang="en">
+Resource script for OpenDJ. It manages a OpenDJ instance as an HA resource.
+</longdesc>
+<shortdesc lang="en">Manages a OpenDJ LDAP server instance</shortdesc>
+
+</resource-agent>
+END
+    return 0
+}
+
+
+
+#######################################
+# Action :
+#   checkStatus
+# Arguments:
+#   None
+# Returns:
+#   Status code
+#     1 process not running
+#     4 PID incorrect
+#     5 disk space insufficient
+#######################################
+checkStatus()
+{
+
+  MAINSTATUS=0
+  log_message "INFO: CheckStatus running"
+  # FIX for server.pid containing wrong PID
+  opendj_pid_file_path=${INSTALL_ROOT}/logs/server.pid
+  OPENDJ_REAL_PID=`ps aux|grep 'start-ds'|grep 'org.opends.server.core.DirectoryServer'|tr -s ' '|cut -d ' ' -f 2`
+  if [ -n "$OPENDJ_REAL_PID" ]; then
+    # OpenDJ process is running
+    OPENDJ_FILE_PID=`cat $opendj_pid_file_path 2> /dev/null`
+    if [ -z "$OPENDJ_FILE_PID" ]; then
+       info "No PID in server.pid file. Process has used following PID ($OPENDJ_REAL_PID)."
+    else
+       if [ "$OPENDJ_REAL_PID" != "$OPENDJ_FILE_PID" ]; then
+          echo $OPENDJ_REAL_PID > $opendj_pid_file_path && chown opendj:opendj $opendj_pid_file_path
+          if [ $? -eq 0 ]; then
+            info "PID in server.pid file was incorrect ($OPENDJ_FILE_PID) and has been replaced with the correct PID ($OPENDJ_REAL_PID)."
+          else
+            error "PID in server.pid file is incorrect ($OPENDJ_FILE_PID) but cannot be replaced with the correct PID ($OPENDJ_REAL_PID)."
+            MAINSTATUS=4
+            echo "opendj is stopped"
+          fi
+       fi
+    fi
+  else
+    # OpenDJ process is not running
+    if [ -f $opendj_pid_file_path ]; then
+       #If server.pid file is present
+       if [ -f /ericsson/opendj/opendj/setup ]; then
+           # CLOUD
+           if [ -d ${INSTALL_ROOT}/end_installation ]; then
+                # After end installation
+                rm -f $opendj_pid_file_path 2> /dev/null
+                if [ $? -eq 0 ]; then
+                   info "Removed server.pid file as opendj process is not running."
+                else
+                   error "server.pid file exists while the process is not running. Cannot remove it."
+                   MAINSTATUS=1
+                   echo "opendj is stopped"
+                fi
+           fi
+       else
+           # PHY
+           rm -f $opendj_pid_file_path 2> /dev/null
+           if [ $? -eq 0 ]; then
+             info "Removed server.pid file as opendj process is not running."
+             MAINSTATUS=1
+             echo "opendj is stopped"
+           else
+             error "server.pid file exists while the process is not running. Cannot remove it."
+             MAINSTATUS=1
+             echo "opendj is stopped"
+           fi
+       fi
+    else
+       #server.pid not exist
+       MAINSTATUS=1
+       echo "opendj is stopped"
+    fi
+  fi
+
+
+  if [ "$MAINSTATUS" -eq 0 ]; then
+     if [ -d ${INSTALL_ROOT}/end_installation ]; then
+          echo "opendj is running"
+     	  diskspacecheck
+     	    if [ $? -ne 0 ]; then
+               info "Disk space usage bigger than $SPACELIMIT% of total capacity (currently $USEDSPACE%), shutting down OpenDJ"
+               MAINSTATUS=5
+            fi
+     else
+           error "end_installation file not present."
+           MAINSTATUS=1
+           echo "opendj is stopped"
+     fi
+#     status -p  $opendj_pid_file_path opendj
+#     MAINSTATUS=${?}
+     # Check if Opendj is running
+#     if [ "$MAINSTATUS" -eq 0 ]; then
+#     fi
+  fi
+
+# check if disk is read only (fault condition, different from disk full)
+#if [ "$MAINSTATUS" -eq 0 ]; then
+#
+#  	  su -c "touch ${INSTALL_ROOT}/db/userRoot/checkReadOnlyFileSystem.txt" - opendj
+#  	  MAINSTATUS=${?}
+#  	  if [ "$MAINSTATUS" -ne 0 ]; then
+#  	  	 error "Opendj DB is in Read Only Mode."
+#                 # !!!!! exit ????????
+#  	  fi
+#   fi  
+#fi
+  log_message "INFO: CheckStatus finishing : $MAINSTATUS"
+  return $MAINSTATUS
+}
+
+
+
+#######################################
+# Action :
+#   check_if_opendj_is_running
+# Arguments:
+#   None
+# Returns:
+#   Service description
+#       0  opendj is running
+#       1  opendj is NOT running 
+#######################################
+check_if_opendj_is_running()
+{
+  OPENDJ_REAL_PID=`ps aux|grep 'start-ds'|grep 'org.opends.server.core.DirectoryServer'|tr -s ' '|cut -d ' ' -f 2`
+  if [ -n "$OPENDJ_REAL_PID" ]; then
+    # OpenDJ process is running
+    info "OpenDJ is already running PID:$OPENDJ_REAL_PID"
+    return 1
+  else
+    info "OpenDJ is NOT already running"
+    return 0
+  fi
+}
+
+##### MAIN #####
+
+
+# Determine what action should be performed on the server
+case "${1}" in
+
+
+start)
+  set_OPENDJ_JAVA_HOME
+  outputValue=${?}
+  if [ ${outputValue} -ne 0 ]; then
+    error "Java version to set OPENDJ_JAVA_HOME not found"
+    exit 1
+  else
+    export OPENDJ_JAVA_HOME
+  fi
+
+  # check if openDJ ia already running
+  # if yes, return with success without running again startDS
+  check_if_opendj_is_running
+  outputValue=${?}
+  if [ ${outputValue} -ne 0 ]; then
+      error "Start DS is already running"
+      # exit from opendj start procedure with success
+      exit 0 
+  fi
+
+
+  #Source global.property
+  #Setting INSTALL_ROOT variabile according to DDC_ON_CLOUD 
+  GLOBAL_PROPERTIES=/ericsson/tor/data/global.properties
+
+  if [ -f "$GLOBAL_PROPERTIES" ] && [ "$cENM_DEPLOYMENT" != TRUE ]; then
+    # we need the following properties: NUMACTL_OPENDJ, NUMACTL_OPENDJ_G9, DDC_ON_CLOUD
+    source ${GLOBAL_PROPERTIES}  2>/dev/null
+  fi
+
+  if [ "${DDC_ON_CLOUD}" == TRUE ] || [ "${cENM_DEPLOYMENT}" == TRUE ]; then
+    INSTALL_ROOT=/ericsson/opendj/opendj
+  else
+    INSTALL_ROOT=/opt/opendj
+  fi
+  export INSTALL_ROOT
+
+  #Remove lock file for backup - if it is present for an unexpected backup failure without exit
+  if [ -f ${INSTALL_ROOT}/bklock.lock ]; then
+      rm -f ${INSTALL_ROOT}/bklock.lock
+  fi
+
+  #Remove file di end installation with success
+  if [ -d ${INSTALL_ROOT}/end_installation ]; then
+               ${RM_RF} ${INSTALL_ROOT}/end_installation
+  fi
+
+  #Remove file replication lock if it is present
+  lockfile=/ericsson/tor/data/replock.lock
+  if [[ "${DDC_ON_CLOUD}" == TRUE ]]; then
+         if [ -f "$lockfile" ]; then
+               ${RM_RF} ${lockfile}
+         fi
+  fi
+
+  configure_if_required
+
+# NEL CASO cENM dopo aver configurato l'ambiente dobbiamo uscire per poi lanciare il start-ds nel entrypoint del Docker applicativo
+# La replication non va piu' settata dalla versione 7.3
+
+if [ "${cENM_DEPLOYMENT}" == TRUE ]; then
+     mkdir -p ${INSTALL_ROOT}/end_installation
+     exit 0
+fi
+
+  # Check if running on G9 HW
+  if [[ $($DMIDECODE -t system | $GREP Product | $AWK '{print $5}') == Gen9 ]]; then
+    if [[ $NUMACTL_OPENDJ_G9 ]]; then
+      # If valid numactl property in global properties
+      NUMA_VALUE=$NUMACTL_OPENDJ_G9
+      info "Going to start OpenDJ with $NUMACTL_OPENDJ_G9"
+    else
+      info "Going to start OpenDJ with no NUMA policy"
+    fi
+  else
+    # If not on G9 hardware
+    if [[ $NUMACTL_OPENDJ ]]; then
+      # If valid numactl property in global properties
+      NUMA_VALUE=$NUMACTL_OPENDJ
+      info "Going to start OpenDJ with $NUMACTL_OPENDJ"
+    else
+      info "Going to start OpenDJ with no NUMA policy"
+    fi
+  fi
+  diskspacecheck
+  if [ $? -ne 0 ]; then
+    info "Disk space usage bigger than $SPACELIMIT% of total capacity (currently $USEDSPACE%), OpenDJ can not start"
+    exit 5
+  fi
+
+  info "Going to start OpenDJ start-ds command"
+  if [[ "${DDC_ON_CLOUD}" == TRUE ]]; then
+        su -c "${INSTALL_ROOT}/bin/start-ds --quiet" - opendj
+#        consul lock -try 1ms lock_${SERVICE_INSTANCE_NAME} /ericsson/opendj/opendj/bin/opendj_last_run.sh &
+  else
+        $NUMA_VALUE su -c "${INSTALL_ROOT}/bin/start-ds --quiet" - opendj
+  fi
+
+  startDsValue=${?}
+  info "value Last startDsValue= $startDsValue"
+
+  #
+  #Start-DS retry for RHel7 on vENM
+  #
+  if [[ "${DDC_ON_CLOUD}" == TRUE ]]; then
+    retryCounter=1
+    while [ $retryCounter -le 10 ] ; do
+       if  [ $startDsValue -ne 0 ] ; then
+          info "Try OpenDJ start n $retryCounter"
+          su -c "${INSTALL_ROOT}/bin/start-ds" - opendj
+          startDsValue=${?}
+          info "value Last startDsValue= $startDsValue"
+          retryCounter=$((retryCounter+1))
+          sleep 10
+       else
+          retryCounter=100
+       fi
+    done
+  fi
+
+  #lanciamo la configurazion di replication solo nel nostro nuovo path
+  # config_replication
+
+  # Uplift to DS version 7.3.0, in the worst case, from 22.03.
+  # ENM is already in RHel7
+  ##START REPLICATION Only for RHel6 / RHel7 upgrade PATH
+
+  #RH7_UPLIFT_OPENDJ=`/usr/bin/curl -s http://$LMS_HOSTNAME:8500/v1/kv/rh7_uplift_opendj --connect-timeout 5 | grep -om1 "rh7_uplift_opendj"`
+  #info "value RH7_UPLIFT_OPENDJ = $RH7_UPLIFT_OPENDJ"
+  #if [ "${RH7_UPLIFT_OPENDJ}" == "${RHEL7_UPGRADE_PATH_EXPECTED_VALUE}" ]; then
+  #  if [ ${startDsValue} -ne 0 ]; then
+  #      error "Start DS for Opendj FAILED"
+  #      exit ${startDsValue}
+  #  fi
+  #
+  #  info "run_opendj_replication started for RHel6 / RHel7 upgrade PATH"
+  #  ${REPLICATION_SCRIPT_RHEL7_UPGRADE_PATH} manual-no-lock &
+  #fi
+
+
+  #START REPLICATION Only for cloud
+  if [[ "${DDC_ON_CLOUD}" == TRUE ]]; then
+  	if [ ${startDsValue} -ne 0 ]; then
+  		error "Start DS for Opendj FAILED"
+  		exit ${startDsValue}
+  	fi
+    #Create file to indicate start opendj is finished with success
+    mkdir -p ${INSTALL_ROOT}/end_installation
+    SERVICEJSON={\"name\":\"opendj-completed\",\"tags\":[\"${SERVICE_INSTANCE_NAME}\"]}
+    curl -X PUT -d "${SERVICEJSON}" http://localhost:8500/v1/agent/service/register
+
+    info "run_opendj_replication started"
+    ${REPLICATION_RUN_SCRIPT} &
+#    consul lock -try 1ns lock_replication /ericsson/opendj/opendj/bin/opendj_check_up.sh
+    info "run_opendj_replication finished"
+
+
+    log_message "INFO: Copy admin-backend-ldif file to recover the status if Replication will not finish with success"
+    /bin/cp ${INSTALL_ROOT}/db/adminRoot/admin-backend.ldif   ${INSTALL_ROOT}/admin-backend.ldif_saved
+
+ 	info "Start DS for Opendj WITH SUCCESS: create directory end_installation"
+
+  else
+    #PHY
+    mkdir -p ${INSTALL_ROOT}/end_installation
+ 	info "Start DS for Opendj WITH SUCCESS: create directory end_installation"
+  fi
+
+#RHel7 systemd require own pid file in /var/run
+    if [ ${startDsValue} -eq 0 ]; then
+        if [[ "${DDC_ON_CLOUD}" == TRUE ]]; then
+            info "systemd pid file on /var/run/ for vENM"
+            /bin/sh -c 'umask 133; cp -f /ericsson/opendj/opendj/logs/server.pid /var/run/opendj.pid'
+        else
+            info "systemd pid file on /var/run/ for pENM"
+            /bin/sh -c 'umask 133; cp -f /var/ericsson/log/opendj/server/server.pid /var/run/opendj.pid'
+        fi
+    fi
+
+  info "Return from start script with startDsValue = ${startDsValue}"
+  exit ${startDsValue}
+  ;;
+
+
+stop)
+  stop
+  exit ${?}
+  ;;
+
+
+restart)
+  #Source global.property
+  #Setting INSTALL_ROOT variabile according to DDC_ON_CLOUD 
+  GLOBAL_PROPERTIES=/ericsson/tor/data/global.properties
+
+  if [ -f "$GLOBAL_PROPERTIES" ] && [ "$cENM_DEPLOYMENT" != TRUE ]; then
+    # we need the following properties: NUMACTL_OPENDJ, NUMACTL_OPENDJ_G9, DDC_ON_CLOUD
+    source ${GLOBAL_PROPERTIES}  2>/dev/null
+  fi
+
+  if [[ "${DDC_ON_CLOUD}" == TRUE ]]; then
+    INSTALL_ROOT=/ericsson/opendj/opendj
+  else
+    INSTALL_ROOT=/opt/opendj
+  fi
+  export INSTALL_ROOT
+
+  #Remove lock file for backup - if it is present for an unexpected backup failure without exit
+  if [ -f ${INSTALL_ROOT}/bklock.lock ]; then
+      rm -f ${INSTALL_ROOT}/bklock.lock
+  fi
+
+  #Remove file di end installation with success
+  if [ -d ${INSTALL_ROOT}/end_installation ]; then
+      ${RM_RF} ${INSTALL_ROOT}/end_installation
+  fi
+
+  #Remove file replication lock if it is present
+  lockfile=/ericsson/tor/data/replock.lock
+  if [[ "${DDC_ON_CLOUD}" == TRUE ]]; then
+         if [ -f "$lockfile" ]; then
+               ${RM_RF} ${lockfile}
+         fi
+  fi
+
+  configure_if_required
+  su -c "${INSTALL_ROOT}/bin/stop-ds --restart --quiet" - opendj
+
+  ReStartDsValue=${?}
+  
+  #START REPLICATION Only for cloud
+  if [[ "${DDC_ON_CLOUD}" == TRUE ]]; then
+  	if [ ${ReStartDsValue} -ne 0 ]; then
+  		error "ReStart DS for Opendj FAILED"
+  		exit ${ReStartDsValue}
+  	fi
+    #Create file to indicate start opendj is finished with success 
+    SERVICEJSON={\"name\":\"opendj-completed\",\"tags\":[\"${SERVICE_INSTANCE_NAME}\"]}
+    curl -X PUT -d "${SERVICEJSON}" http://localhost:8500/v1/agent/service/register
+    mkdir -p ${INSTALL_ROOT}/end_installation
+    
+  	     info "run_opendj_replication stared"
+  	     ${REPLICATION_RUN_SCRIPT} &
+#         consul lock -try 1ns lock_replication /ericsson/opendj/opendj/bin/opendj_check_up.sh
+  	     info "run_opendj_replication finished"
+
+    log_message "INFO: Copy admin-backend-ldif file to recover the status if Replication will not finish with success"
+    /bin/cp ${INSTALL_ROOT}/db/adminRoot/admin-backend.ldif   ${INSTALL_ROOT}/admin-backend.ldif_saved
+ 	info "Start DS for Opendj WITH SUCCESS: create directory end_installation"
+
+  else
+      #PHY
+      mkdir -p ${INSTALL_ROOT}/end_installation
+      info "Start DS for Opendj WITH SUCCESS: create directory end_installation"
+fi
+
+#RHel7 systemd require own pid file in /var/run
+    if [ ${ReStartDsValue} -eq 0 ]; then
+        if [[ "${DDC_ON_CLOUD}" == TRUE ]]; then
+            info "systemd pid file on /var/run/ for vENM"
+            /bin/sh -c 'umask 133; cp -f /ericsson/opendj/opendj/logs/server.pid /var/run/opendj.pid'
+        else
+            info "systemd pid file on /var/run/ for pENM"
+            /bin/sh -c 'umask 133; cp -f /var/ericsson/log/opendj/server/server.pid /var/run/opendj.pid'
+        fi
+    fi
+
+    info "Return from restart script with startDsValue = ${ReStartDsValue}"
+    exit ${ReStartDsValue}
+;;
+
+status)
+  log_message "INFO: Check STATUS RUNNING"
+  #Setting INSTALL_ROOT for service opendj status without using global.properties
+  if ! [ -f /ericsson/opendj/opendj/setup ] && ! [ -f /opt/opendj/setup ]; then
+        error "Installation directories are not yet available"
+        exit 1
+  fi
+
+  # only in cloud run opendj_monitor script for monitoring opendj status
+  if [ -f /ericsson/opendj/opendj/setup ]; then
+      MONITOR_ROOT="/ericsson/opendj/opendj"
+      export MONITOR_ROOT
+      MONITOR_SCRIPT="${MONITOR_ROOT}"/bin/opendj_monitor.sh
+      "${MONITOR_SCRIPT}" mute
+      exit ${?}
+  fi
+
+  if [ -f /opt/opendj/setup ]; then
+     INSTALL_ROOT=/opt/opendj
+  else
+     error "Installation directories are not yet available"
+     exit 1
+  fi 
+  export INSTALL_ROOT
+
+  checkStatus
+  exit ${?}
+  ;;
+
+
+
+monitor)
+  # like status with more prints
+  info "OpenDJ monitoring.....START"
+  #Setting INSTALL_ROOT for service opendj status without using global.properties
+  if ! [ -f /ericsson/opendj/opendj/setup ] && ! [ -f /opt/opendj/setup ]; then
+        error "Installation directories are not yet available"
+        exit 1
+  fi
+  MONITOR_ROOT="/ericsson/opendj/opendj"
+  export MONITOR_ROOT
+  MONITOR_SCRIPT="${MONITOR_ROOT}"/bin/opendj_monitor.sh
+  "${MONITOR_SCRIPT}"
+  retcode=${?}
+  info "OpenDJ monitoring.....return code:$retcode"
+   exit $retcode
+  ;;
+
+
+check)
+  #Setting INSTALL_ROOT for service opendj status without using global.properties
+  if [ -f /ericsson/opendj/opendj/setup ]; then
+        INSTALL_ROOT=/ericsson/opendj/opendj
+  else
+      if [ -f /opt/opendj/setup ]; then
+        INSTALL_ROOT=/opt/opendj
+      else
+        error "Installation directories are not yet available"
+        exit 1
+      fi 
+  fi
+  export INSTALL_ROOT
+  checkStatus
+  exit ${?}
+  ;;
+
+
+ meta-data)
+    metadata
+  ;;
+*)
+  echo "Usage:  $0 { start | stop | status | restart | monitor | meta-data }"
+  exit 1
+  ;;
+esac
+

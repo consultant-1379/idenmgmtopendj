@@ -1,0 +1,15 @@
+<tor_sw>
+    <litp:component-def id="opendj">
+        <litp:lsb-service-def id="opendj_service">
+          <name>opendj</name>
+          <require>pkg</require>
+          <litp:ip-address-def id="ip"/>
+        </litp:lsb-service-def>
+        <litp:package-def id="pkg">
+          <ensure>installed</ensure>
+          <name>ERICidenmgmtopendj_CXP9030738</name>
+          <repository/>
+          <version>%{Version}</version>
+        </litp:package-def>
+  </litp:component-def>
+</tor_sw>

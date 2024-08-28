@@ -1,0 +1,8 @@
+#OpenDJ Log Policy
+#
+#NOTE: don't leaving trailing white space
+
+Log_Retention_Total_File_Size_Limit=1 gb
+Log_Retention_File_Number_Limit=90
+Log_Rotation_Time_Limit=1 d
+Log_Rotation_File_Size_Limit=100 mb
